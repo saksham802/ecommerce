@@ -23,7 +23,7 @@ class _RecentviewedState extends State<Recentviewed> {
 
     return isWishListEmpty ? Emptyscreen(imagePath: 'assets/wishlist.png', title:"Your WishList is Empty", subtitle: "Add Something that you wish", buttonText: "Add Something") : Scaffold(appBar: AppBar(toolbarHeight: 75,title: Text("Recently Viewed Products",style: TextStyle(fontWeight: FontWeight.bold,color:textColor),),backgroundColor: Theme.of(context).scaffoldBackgroundColor,actions: [IconButton(
       onPressed: () {
-        warningDialog(title: "Do you Want to clear Viewed History?", subtitle: "Are you sure?", fct:(){}, context: context);
+        GlobalMethod.warningDialog(title: "Do you Want to clear Viewed History?", subtitle: "Are you sure?", fct:(){}, context: context);
       },
       icon: Icon(
         IconlyBroken.delete,

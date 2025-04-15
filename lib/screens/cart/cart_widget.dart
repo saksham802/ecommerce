@@ -1,13 +1,18 @@
+import 'package:ecommerce/Provider/ProductProvider.dart';
+import 'package:ecommerce/models/Cart_Model.dart';
+import 'package:ecommerce/models/product_model.dart';
 import 'package:ecommerce/widget/heartbtn.dart';
 import 'package:ecommerce/widget/textwidget.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:provider/provider.dart';
 
+import '../../Provider/CartProvider.dart';
+import '../../Provider/WishListProvider.dart';
 import '../../theme/darkthemeprovider.dart';
+
 
 class CartWidget extends StatefulWidget {
   const CartWidget({super.key});
@@ -35,9 +40,25 @@ class _CartWidgetState extends State<CartWidget> {
   Widget build(BuildContext context) {
     final themeState = Provider.of<DarkThemeProvider>(context);
     final Color textColor = themeState.getDarkTheme ? Colors.white : Colors.black;
+    final productProvider = Provider.of<ProductProvider>(context);
+    final cartModel = Provider.of<CartModel>(context);
+    final cartProvider = Provider.of<CartProvider>(context);
+    final currentProduct = productProvider.findProductByID(cartModel.productId);
+    final int quantity = cartModel.quantity;
+    final wishlistProvider = Provider.of<WishlistProvider>(context);
+    final bool? isInList = wishlistProvider.getWishlistItems.containsKey(currentProduct.id);
 
-    return InkWell(
-      onTap: () {},
+    if (_quantityTextController.text != quantity.toString()) {
+      _quantityTextController.text = quantity.toString();
+    }
+
+    double usedPrice = currentProduct.isOnSale
+        ? currentProduct.saleprice
+        : currentProduct.price;
+
+    return GestureDetector(
+      onTap: () {
+      },
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
@@ -54,7 +75,7 @@ class _CartWidgetState extends State<CartWidget> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: FancyShimmerImage(
-                  imageUrl: "https://i.postimg.cc/wT7fRyBd/veg.png",
+                  imageUrl: currentProduct.imgUrl,
                   height: double.infinity,
                   width: double.infinity,
                   boxFit: BoxFit.fill,
@@ -62,7 +83,7 @@ class _CartWidgetState extends State<CartWidget> {
               ),
             ),
 
-            const SizedBox(width: 12), // Spacing between image and text
+            const SizedBox(width: 12),
 
             /// Text & Quantity Section
             Expanded(
@@ -71,7 +92,7 @@ class _CartWidgetState extends State<CartWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Textwidget(
-                    text: "Title",
+                    text: currentProduct.title,
                     color: textColor,
                     textSize: 20,
                     isTitle: true,
@@ -83,25 +104,21 @@ class _CartWidgetState extends State<CartWidget> {
                     children: [
                       _quantityController(
                         fct: () {
-                          if (_quantityTextController.text == '1') {
-                            return;
-                          } else {
-                            setState(() {
-                              _quantityTextController.text = (int.parse(
-                                  _quantityTextController
-                                      .text) -
-                                  1)
-                                  .toString();
-                            });
-                          }
-
+                          if (_quantityTextController.text == '1') return;
+                          cartProvider.reduceByOne(currentProduct.id);
+                          setState(() {
+                            _quantityTextController.text =
+                                (int.parse(_quantityTextController.text) - 1)
+                                    .toString();
+                          });
                         },
                         color: Colors.red,
                         icon: CupertinoIcons.minus,
                       ),
                       SizedBox(
                         width: 40,
-                        child: TextField(  style: TextStyle(color: textColor, fontSize: 18),
+                        child: TextField(
+                          style: TextStyle(color: textColor, fontSize: 18),
                           controller: _quantityTextController,
                           keyboardType: TextInputType.number,
                           textAlign: TextAlign.center,
@@ -127,15 +144,13 @@ class _CartWidgetState extends State<CartWidget> {
                       ),
                       _quantityController(
                         fct: () {
-                          if(_quantityTextController=="1"){
-                            return;}
-                            else{
-                              setState(() {
-                                _quantityTextController.text=(int.parse(_quantityTextController.text)+1).toString();
-                              });
-                          }
-                          }
-                        ,
+                          cartProvider.increaseByOne(currentProduct.id);
+                          setState(() {
+                            _quantityTextController.text =
+                                (int.parse(_quantityTextController.text) + 1)
+                                    .toString();
+                          });
+                        },
                         color: Colors.green,
                         icon: CupertinoIcons.plus,
                       ),
@@ -145,14 +160,17 @@ class _CartWidgetState extends State<CartWidget> {
               ),
             ),
 
-            /// Spacer to push delete & price column to the right
             const Spacer(),
 
-            /// Price & Delete Section
+            /// Wishlist + Remove + Price
             Column(
               children: [
                 InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    cartProvider.removeOneItemfromcart(cartId: cartModel.id,
+                      productId: cartModel.productId,
+                      quantity: cartModel.quantity,);
+                  },
                   child: const Icon(
                     CupertinoIcons.cart_badge_minus,
                     color: Colors.red,
@@ -160,10 +178,12 @@ class _CartWidgetState extends State<CartWidget> {
                   ),
                 ),
                 const SizedBox(height: 5),
-                const Heartbtn(),
+
                 const SizedBox(height: 5),
+
                 Textwidget(
-                  text: '\$0.29',
+                  text:
+                  "\$ ${(usedPrice * int.parse(_quantityTextController.text)).toStringAsFixed(2)}",
                   color: textColor,
                   textSize: 18,
                   maxline: 1,
@@ -201,3 +221,4 @@ class _CartWidgetState extends State<CartWidget> {
     );
   }
 }
+

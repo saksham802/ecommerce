@@ -1,3 +1,4 @@
+import 'package:ecommerce/Provider/CartProvider.dart';
 import 'package:ecommerce/screens/cart/cart.dart';
 import 'package:ecommerce/screens/category.dart';
 import 'package:ecommerce/screens/home.dart';
@@ -21,6 +22,7 @@ class BottomNav extends StatefulWidget {
 class _BottomNavState extends State<BottomNav> {
   int _currentIndex = 0;
 
+
   final List<Map<String, dynamic>> _pages = [
     {'label': "Home", 'page': HomeScreen()},
     {'label': "Category", 'page': CategoryScreen()},
@@ -40,7 +42,7 @@ class _BottomNavState extends State<BottomNav> {
     final themeState = Provider.of<DarkThemeProvider>(context);
     bool isDark = themeState.getDarkTheme;
     final Color textColor = themeState.getDarkTheme ? Colors.white : Colors.black;
-
+    final cartProvider=Provider.of<CartProvider>(context);
 
     return Scaffold(
       //appBar: AppBar(title:Text(_pages[_currentIndex]['label']) ,),
@@ -65,7 +67,7 @@ class _BottomNavState extends State<BottomNav> {
           BottomNavigationBarItem(
             icon:badges.Badge(
     position: badges.BadgePosition.topStart(top: 10),
-                badgeStyle:badges.BadgeStyle(badgeColor: Colors.blue),badgeContent: Textwidget(text:"1", color: Colors.white, textSize: 14),
+                badgeStyle:badges.BadgeStyle(badgeColor: Colors.blue),badgeContent: Textwidget(text:cartProvider.getCartItems.length.toString(), color: Colors.white, textSize: 14),
     child:Icon(_currentIndex == 2 ? IconlyBold.bag2 : IconlyLight.bag2)),
             label: "Cart",
           ),

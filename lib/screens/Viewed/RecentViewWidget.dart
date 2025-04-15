@@ -20,7 +20,7 @@ class _RecentviewwidgetState extends State<Recentviewwidget> {
     final themeState = Provider.of<DarkThemeProvider>(context);
     final Color textColor = themeState.getDarkTheme ? Colors.white : Colors.black;
     return GestureDetector(onTap: (){
-      Navigator.push(context, MaterialPageRoute(builder: (context)=>ProductScreen()));
+     // Navigator.push(context, MaterialPageRoute(builder: (context)=>ProductScreen()));
 
     },child: Container( height: MediaQuery.sizeOf(context).height * 0.12,decoration: BoxDecoration(borderRadius: BorderRadius.circular(12),color: Theme.of(context).cardColor),child: Row(
       children: [

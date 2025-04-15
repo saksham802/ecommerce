@@ -1,13 +1,18 @@
 import 'package:card_swiper/card_swiper.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce/auth/forgetpass.dart';
 import 'package:ecommerce/auth/googlebtn.dart';
 import 'package:ecommerce/auth/registerPage.dart';
+import 'package:ecommerce/encrypt/EncryptionMethod.dart';
+import 'package:ecommerce/screens/bottombar.dart';
 import 'package:ecommerce/widget/textwidget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:flutter/gestures.dart';
-
-import 'AuthButton.dart'; // Ensure this file and class exist
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:encrypt/encrypt.dart' as enc;
+import 'AuthButton.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final FocusNode _passFocusNode = FocusNode();
   final _formKey = GlobalKey<FormState>();
   bool _obscuredText = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -30,6 +36,80 @@ class _LoginScreenState extends State<LoginScreen> {
     _passFocusNode.dispose();
     super.dispose();
   }
+
+  Future<void> _loginUsingGoogle(context) async{
+    final googlesignIn=GoogleSignIn();
+    final googleAccount= await GoogleSignIn().signIn();
+    if(googleAccount!=null){
+      final googleAuth= await googleAccount.authentication;
+     if(googleAuth.idToken!=null&&googleAuth.accessToken!=null){
+       try{
+         await authInstance.signInWithCredential(GoogleAuthProvider.credential(
+           idToken: googleAuth.idToken,
+           accessToken: googleAuth.accessToken
+         ));
+         Navigator.push(context, MaterialPageRoute(builder: (context)=>BottomNav()));
+       } on FirebaseAuthException catch(error){
+         ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text(error.message ?? 'Login failed')),
+         );
+       }finally{
+
+       }
+     }
+    }
+  }
+
+  Future<void> _loginUser() async {
+    final isValid = _formKey.currentState!.validate();
+    FocusScope.of(context).unfocus();
+
+    if (!isValid) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailTextController.text.trim(),
+        password: _passTextController.text.trim(),
+      );
+
+      final user = userCredential.user;
+      if (user != null) {
+        final docSnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
+
+        if (docSnapshot.exists) {
+          final data = docSnapshot.data()!;
+          final base64Key = data['key'];
+          final base64Iv = data['iv'];
+          final encryptedName = data['encryptedName'];
+
+          final key = enc.Key.fromBase64(base64Key);
+          final iv = enc.IV.fromBase64(base64Iv);
+          EncryptionMethod.keyEnc=key;
+          EncryptionMethod.vi=iv;
+
+          // Store or use decryptedName as needed
+        }
+
+      }
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const BottomNav()),
+      );
+    } on FirebaseAuthException catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message ?? 'Login failed')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -56,9 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
             autoplay: true,
             itemCount: offerImages.length,
           ),
-          Container(
-            color: Colors.black.withOpacity(0.7),
-          ),
+          Container(color: Colors.black.withOpacity(0.7)),
           SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(13.0),
@@ -83,7 +161,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     key: _formKey,
                     child: Column(
                       children: [
-                        // Email Field
                         TextFormField(
                           style: const TextStyle(color: Colors.white),
                           decoration: const InputDecoration(
@@ -110,8 +187,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                         ),
                         const SizedBox(height: 30),
-
-                        // Password Field
                         TextFormField(
                           style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(
@@ -138,27 +213,24 @@ class _LoginScreenState extends State<LoginScreen> {
                           textInputAction: TextInputAction.done,
                           controller: _passTextController,
                           obscureText: _obscuredText,
+                          focusNode: _passFocusNode,
                           keyboardType: TextInputType.visiblePassword,
-                          onEditingComplete: () {
-                            FocusScope.of(context).unfocus();
-                          },
                           validator: (value) {
-                            if (value == null || value.isEmpty || value.length < 7) {
-                              return 'Please enter a valid password (min 7 chars)';
+                            if (value == null || value.length < 7) {
+                              return 'Password must be at least 7 characters';
                             }
                             return null;
                           },
                         ),
                         const SizedBox(height: 10),
-
-                        // Forgot Password
                         Align(
                           alignment: Alignment.topRight,
                           child: TextButton(
-                            onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context)=>ForgetPasswordScreen()));},
+                            onPressed: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => ForgetPasswordScreen()));
+                            },
                             child: const Text(
                               'Forget password?',
-                              maxLines: 1,
                               style: TextStyle(
                                   color: Colors.lightBlue,
                                   fontSize: 18,
@@ -168,19 +240,15 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 10),
-
-                        // Login Button
                         AuthButton(
-                          fct: () {},
-                          buttonText: 'Login',
+                          fct: _isLoading ? null : _loginUser,
+                          buttonText: _isLoading ? 'Loading...' : 'Login',
                         ),
                         const SizedBox(height: 10),
-
-                        // Google Sign-in Button
-                        GoogleBTN(),
+                        InkWell(onTap: (){
+                          _loginUsingGoogle(context);
+                        },child: GoogleBTN()),
                         const SizedBox(height: 10),
-
-                        // OR Divider
                         Row(
                           children: [
                             const Expanded(
@@ -205,16 +273,17 @@ class _LoginScreenState extends State<LoginScreen> {
                           ],
                         ),
                         const SizedBox(height: 10),
-
-                        // Guest Login
                         AuthButton(
-                          fct: () {},
+                          fct: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => const BottomNav()),
+                            );
+                          },
                           buttonText: 'Continue as a guest',
                           primary: Colors.black,
                         ),
                         const SizedBox(height: 10),
-
-                        // Sign-up Prompt
                         RichText(
                           text: TextSpan(
                             text: 'Don\'t have an account?',
@@ -228,7 +297,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     fontWeight: FontWeight.w600),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
-                                    Navigator.push(context, MaterialPageRoute(builder: (context)=>RegisterScreen()));
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
                                   },
                               ),
                             ],

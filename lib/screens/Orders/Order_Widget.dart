@@ -21,7 +21,7 @@ class _OrderWidgetState extends State<OrderWidget> {
 
 
     return GestureDetector(onTap: (){
-      Navigator.push(context, MaterialPageRoute(builder: (context)=>ProductScreen()));
+      //Navigator.push(context, MaterialPageRoute(builder: (context)=>ProductScreen(product: ,)));
 
     },child: Container( height: MediaQuery.sizeOf(context).height * 0.12,decoration: BoxDecoration(borderRadius: BorderRadius.circular(12),color: Theme.of(context).cardColor),child: Row(
       children: [

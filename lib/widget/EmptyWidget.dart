@@ -1,11 +1,13 @@
 import 'package:ecommerce/innerscreen/FeedPage.dart';
+import 'package:ecommerce/widget/FeedWidget.dart';
 import 'package:ecommerce/widget/textwidget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../theme/darkthemeprovider.dart';
 
-class Emptyscreen extends StatelessWidget {
-  const Emptyscreen({
+class EmptyScreen extends StatelessWidget {
+  const EmptyScreen({
     Key? key,
     required this.imagePath,
     required this.title,
@@ -18,11 +20,9 @@ class Emptyscreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeState = Provider.of<DarkThemeProvider>(context);
-    final bool isDarkTheme = themeState.getDarkTheme;
-    final Color textColor = isDarkTheme ? Colors.white : Colors.black;
+    final Color color = themeState.getDarkTheme ? Colors.white : Colors.black;
 
     return Scaffold(
-      appBar: AppBar(),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -34,7 +34,7 @@ class Emptyscreen extends StatelessWidget {
               Image.asset(
                 imagePath,
                 width: double.infinity,
-                height: MediaQuery.of(context).size.height * 0.4,
+                height: MediaQuery.sizeOf(context).height * 0.4,
               ),
               const SizedBox(height: 10),
               const Text(
@@ -49,28 +49,29 @@ class Emptyscreen extends StatelessWidget {
               Textwidget(text: title, color: Colors.cyan, textSize: 20),
               const SizedBox(height: 20),
               Textwidget(text: subtitle, color: Colors.cyan, textSize: 20),
-              SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+              SizedBox(height: MediaQuery.sizeOf(context).height * 0.1),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   elevation: 0,
                   backgroundColor: Theme.of(context).colorScheme.secondary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
-                    side: BorderSide(color: textColor),
+                    side: BorderSide(color: color),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
                 ),
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => FeedsScreen()),
+                    MaterialPageRoute(builder: (context) => const FeedsScreen()),
                   );
                 },
                 child: Textwidget(
                   text: buttonText,
                   textSize: 20,
-
-                  color: textColor,
+                  color: themeState.getDarkTheme
+                      ? Colors.grey.shade800
+                      : Colors.grey.shade300,
                   isTitle: true,
                 ),
               ),

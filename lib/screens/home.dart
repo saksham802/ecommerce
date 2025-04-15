@@ -1,7 +1,9 @@
 
 import 'package:card_swiper/card_swiper.dart';
+import 'package:ecommerce/Provider/ProductProvider.dart';
 import 'package:ecommerce/innerscreen/FeedPage.dart';
 import 'package:ecommerce/innerscreen/OnSaleScreen.dart';
+import 'package:ecommerce/models/product_model.dart';
 import 'package:ecommerce/widget/FeedWidget.dart';
 import 'package:ecommerce/widget/on_sale_widget.dart';
 import 'package:ecommerce/widget/textwidget.dart';
@@ -26,6 +28,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final productProviders = Provider.of<ProductProvider>(context);
+    List<ProductModel> allProducts = ProductProvider.productsList;
+    List<ProductModel> allSaleProducts = ProductProvider.onSaleProductList;
     final themeState = Provider.of<DarkThemeProvider>(context);
     final Color textColor = themeState.getDarkTheme ? Colors.white : Colors.black;
     return Scaffold(
@@ -84,21 +89,25 @@ class _HomeScreenState extends State<HomeScreen> {
                       Icon(IconlyLight.discount, color: Colors.red),
                     ],
                   ),
-        
+
                   const SizedBox(width: 10), // Space between text and list
-        
-                  // On Sale ListView (Horizontal)
-                  Expanded(
+
+                  Flexible(
                     child: SizedBox(
-                      height: 170, // Fixed height to prevent layout issues
+                      height: MediaQuery.sizeOf(context).height * 0.19,
                       child: ListView.builder(
-                        itemCount: 10,
+                        itemCount: allSaleProducts.length < 10 ? allSaleProducts.length : 10,
                         scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        itemBuilder: (context, index) {
-                          return SizedBox(
-                            width: 200, // Increased width from 160 to 200
-                            child: OnSaleWidget(),
+                        itemBuilder: (ctx, index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 10.0),
+                            child: SizedBox(
+                              width: 200,
+                              child: ChangeNotifierProvider.value(
+                                value: allSaleProducts[index],
+                                child: const OnSaleWidget(),
+                              ),
+                            ),
                           );
                         },
                       ),
@@ -127,13 +136,20 @@ class _HomeScreenState extends State<HomeScreen> {
               child: GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2, // Adds spacing between rows
-                childAspectRatio: 0.8, // Adjusted for better size
-                children: List.generate(6, (index) {
-                  return Feedwidget(); // Ensure correct spelling & import
-                }),
+                crossAxisCount: 2,
+                childAspectRatio: 0.8,
+                children: List.generate(
+                  allProducts.length < 4 ? allProducts.length : 4,
+                      (index) {
+                    return ChangeNotifierProvider.value(
+                      value: allProducts[index],
+                      child: const Feedwidget(),
+                    );
+                  },
+                ),
               ),
             ),
+
 
 
           ],

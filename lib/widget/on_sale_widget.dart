@@ -1,85 +1,106 @@
-import 'package:ecommerce/innerscreen/ProductPage.dart';
-import 'package:ecommerce/widget/Pricewidget.dart';
-import 'package:ecommerce/widget/heartbtn.dart';
+import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:provider/provider.dart';
 
+import '../innerscreen/ProductPage.dart';
+import '../models/product_model.dart';
 import '../theme/darkthemeprovider.dart';
+import 'Pricewidget.dart';
+import 'heartbtn.dart';
+
 
 class OnSaleWidget extends StatelessWidget {
   const OnSaleWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final onsaleproductModel = Provider.of<ProductModel>(context);
     final themeState = Provider.of<DarkThemeProvider>(context);
     final Color textColor = themeState.getDarkTheme ? Colors.white : Colors.black;
-    final Color box=themeState.getDarkTheme? Colors.white.withOpacity(.2): Color(0xF2FDFDFF);
-    return InkWell(onTap:(){
-      Navigator.push(context,MaterialPageRoute(builder: (context)=>ProductScreen()));
-    } ,
+    final Color boxColor = themeState.getDarkTheme
+        ? Colors.white.withOpacity(0.2)
+        : const Color(0xF2FDFDFF);
+
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context)=>ProductScreen(product: onsaleproductModel))
+        );
+      },
       child: SizedBox(
+        height: 180, // Increased height
         child: Card(
           shape: RoundedRectangleBorder(
-           // side: BorderSide(color: Colors.white, width: 1.5),
             borderRadius: BorderRadius.circular(13),
           ),
-          color: box,
+          color: boxColor,
           elevation: 6,
           child: Padding(
-            padding: const EdgeInsets.all(10.0),
+            padding: const EdgeInsets.all(12.0),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Product Image with fixed size
+                // Product Image and Details (Left Side)
                 Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child: Image.asset(
-                        "assets/fruits.png",
-                        width: 80,  // Reduced width to fit inside card
+                      child: FancyShimmerImage(
+                        width: 80,
                         height: 80,
-                        fit: BoxFit.cover,
+                        imageUrl: onsaleproductModel.imgUrl,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    // Price below image
-                    Pricewidget( salePrice: 2.99,
-                      price: 5.9,
-                      textPrice:'1',
-                      isOnSale: true,),
+                    SizedBox(
+                      width: 80,
+                      child: Text(
+                        onsaleproductModel.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: textColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Pricewidget(
+                      salePrice: onsaleproductModel.saleprice,
+                      price: onsaleproductModel.price,
+                      textPrice: '1',
+                      isOnSale: onsaleproductModel.isOnSale,
+                    ),
                   ],
                 ),
 
-                 // Space between image and details
+                const SizedBox(width: 12),
 
-                // Right-side content (Weight & Icons)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Weight
-                    Text(
-                      "1KG",
-                      style: TextStyle(color:textColor ,fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    // Icons (Bag & Heart)
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            print("Bag Clicked");
-                          },
-                          child: Icon(IconlyLight.bag, size: 24),
+                // Right Side (Expanded)
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "1KG",
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(width: 12),
-                        const Heartbtn(),
-                      ],
-                    ),
-                  ],
+                      ),
+                      const Spacer(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: const [
+                          Icon(IconlyLight.bag),
+
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -89,3 +110,4 @@ class OnSaleWidget extends StatelessWidget {
     );
   }
 }
+

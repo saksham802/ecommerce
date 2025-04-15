@@ -1,4 +1,7 @@
+import 'package:ecommerce/Provider/ProductProvider.dart';
 import 'package:ecommerce/innerscreen/ProductPage.dart';
+import 'package:ecommerce/models/product_model.dart';
+import 'package:ecommerce/services/Global_Method.dart';
 import 'package:ecommerce/widget/Pricewidget.dart';
 import 'package:ecommerce/widget/heartbtn.dart';
 import 'package:ecommerce/widget/textwidget.dart';
@@ -6,6 +9,9 @@ import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../Provider/CartProvider.dart';
+
+import '../Provider/WishListProvider.dart';
 import '../theme/darkthemeprovider.dart';
 
 class Feedwidget extends StatefulWidget {
@@ -17,6 +23,7 @@ class Feedwidget extends StatefulWidget {
 
 class _FeedwidgetState extends State<Feedwidget> {
   final TextEditingController _quantityTextController = TextEditingController();
+  bool _isAddedToCart = false;
 
   @override
   void initState() {
@@ -34,40 +41,55 @@ class _FeedwidgetState extends State<Feedwidget> {
   Widget build(BuildContext context) {
     final themeState = Provider.of<DarkThemeProvider>(context);
     final Color textColor = themeState.getDarkTheme ? Colors.white : Colors.black;
+    final productModel = Provider.of<ProductModel>(context);
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    final wishlistProvider = Provider.of<WishlistProvider>(context);
+    bool? _isInWishlist = wishlistProvider.getWishlistItems.containsKey(productModel.id);
 
     return Padding(
-      padding: const EdgeInsets.all(1.0),
+      padding: const EdgeInsets.all(4),
       child: Material(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           onTap: () {
-            Navigator.push(context,MaterialPageRoute(builder: (context)=>ProductScreen()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProductScreen(product: productModel),
+              ),
+            );
           },
           borderRadius: BorderRadius.circular(12),
           child: Padding(
-            padding: const EdgeInsets.all(1.0),
+            padding: const EdgeInsets.all(2),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
                   child: FancyShimmerImage(
-                    imageUrl: "https://i.postimg.cc/wT7fRyBd/veg.png",
-                    height: MediaQuery.sizeOf(context).width*0.21, // Increased height
-                    width: MediaQuery.sizeOf(context).width*0.2,boxFit: BoxFit.fill, // Increased width
+                    imageUrl: productModel.imgUrl,
+                    height: MediaQuery.sizeOf(context).width * 0.21,
+                    width: MediaQuery.sizeOf(context).width * 0.2,
+                    boxFit: BoxFit.fill,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Textwidget(
-                      text: "Title",
-                      color: textColor,
-                      textSize: 20,
-                      isTitle: true,
+                    Expanded(
+                      child: Textwidget(
+                        text: productModel.title,
+                        color: textColor,
+                        textSize: 20,
+                        isTitle: true,
+                      ),
                     ),
-                    const Heartbtn(),
+                    HeartBTN(
+                      productId: productModel.id,
+                      isInWishlist: _isInWishlist,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 5),
@@ -75,8 +97,9 @@ class _FeedwidgetState extends State<Feedwidget> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Flexible(
-                      child: Pricewidget( salePrice: 2.99,
-                        price: 5.9,
+                      child: Pricewidget(
+                        salePrice: productModel.saleprice,
+                        price: productModel.price,
                         textPrice: _quantityTextController.text,
                         isOnSale: true,
                       ),
@@ -90,23 +113,24 @@ class _FeedwidgetState extends State<Feedwidget> {
                         ),
                         const SizedBox(width: 5),
                         SizedBox(
-                          width: 50, // Added constraint to prevent overflow
+                          width: 50,
                           child: TextFormField(
                             controller: _quantityTextController,
-                            onChanged: (value){setState(() {
-
-                            });},
-                            key: const ValueKey("10"),
+                            onChanged: (_) {
+                              setState(() {});
+                            },
+                            key: const ValueKey("quantity"),
                             style: TextStyle(color: textColor, fontSize: 18),
                             keyboardType: TextInputType.number,
                             maxLines: 1,
-                            textAlign: TextAlign.center, // Centers the text
+                            textAlign: TextAlign.center,
                             inputFormatters: [
                               FilteringTextInputFormatter.allow(RegExp('[0-9.]')),
                             ],
                             decoration: InputDecoration(
-                              isDense: true, // Reduces default padding
-                              contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+                              isDense: true,
+                              contentPadding:
+                              const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -116,31 +140,43 @@ class _FeedwidgetState extends State<Feedwidget> {
                       ],
                     ),
                   ],
-                ),const Spacer(),
+                ),
+                const Spacer(),
                 SizedBox(
                   width: double.infinity,
                   child: TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      final quantity = int.tryParse(_quantityTextController.text) ?? 1;
+                      GlobalMethod.addToCart(
+                        productId: productModel.id,
+                        quantity: quantity,
+                        context: context,
+                      );
+                      cartProvider.fetchCart();
+                      setState(() {
+                        _isAddedToCart = true;
+                      });
+                    },
+                    style: ButtonStyle(
+                      backgroundColor:
+                      MaterialStateProperty.all(Theme.of(context).cardColor),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                        const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(12.0),
+                            bottomRight: Radius.circular(12.0),
+                          ),
+                        ),
+                      ),
+                    ),
                     child: Textwidget(
-                      text: 'Add to cart',
+                      text: _isAddedToCart ? 'Added to cart' : 'Add to cart',
                       color: textColor,
                       textSize: 20,
                     ),
-                    style: ButtonStyle(
-                        backgroundColor:
-                        MaterialStateProperty.all(Theme.of(context).cardColor),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                          const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.only(
-                              bottomLeft: Radius.circular(12.0),
-                              bottomRight: Radius.circular(12.0),
-                            ),
-                          ),
-                        )),
                   ),
-                )
-
+                ),
               ],
             ),
           ),
