@@ -45,7 +45,7 @@ class _BottomNavState extends State<BottomNav> {
     final cartProvider=Provider.of<CartProvider>(context);
 
     return Scaffold(
-      //appBar: AppBar(title:Text(_pages[_currentIndex]['label']) ,),
+
       body: _pages[_currentIndex]["page"],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: isDark ? Theme.of(context).cardColor : Colors.white,

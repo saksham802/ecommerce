@@ -64,7 +64,7 @@ class _CartWidgetState extends State<CartWidget> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// Image Container
+
             Container(
               height: MediaQuery.sizeOf(context).width * 0.25,
               width: MediaQuery.sizeOf(context).width * 0.25,
@@ -85,7 +85,7 @@ class _CartWidgetState extends State<CartWidget> {
 
             const SizedBox(width: 12),
 
-            /// Text & Quantity Section
+
             Expanded(
               flex: 3,
               child: Column(
@@ -99,7 +99,6 @@ class _CartWidgetState extends State<CartWidget> {
                   ),
                   const SizedBox(height: 8),
 
-                  /// Quantity Selector
                   Row(
                     children: [
                       _quantityController(
@@ -162,7 +161,7 @@ class _CartWidgetState extends State<CartWidget> {
 
             const Spacer(),
 
-            /// Wishlist + Remove + Price
+
             Column(
               children: [
                 InkWell(

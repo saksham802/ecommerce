@@ -6,8 +6,10 @@ import 'package:ecommerce/widget/Pricewidget.dart';
 import 'package:ecommerce/widget/heartbtn.dart';
 import 'package:ecommerce/widget/textwidget.dart';
 import 'package:fancy_shimmer_image/fancy_shimmer_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:provider/provider.dart';
 import '../Provider/CartProvider.dart';
 
@@ -86,6 +88,7 @@ class _FeedwidgetState extends State<Feedwidget> {
                         isTitle: true,
                       ),
                     ),
+                    Icon(_isAddedToCart?IconlyBold.bag:IconlyLight.bag),
                     HeartBTN(
                       productId: productModel.id,
                       isInWishlist: _isInWishlist,
@@ -101,7 +104,7 @@ class _FeedwidgetState extends State<Feedwidget> {
                         salePrice: productModel.saleprice,
                         price: productModel.price,
                         textPrice: _quantityTextController.text,
-                        isOnSale: true,
+                        isOnSale: productModel.isOnSale,
                       ),
                     ),
                     Row(

@@ -13,17 +13,17 @@ class WishlistProvider with ChangeNotifier {
     return _wishlistItems;
   }
 
-  // void addRemoveProductToWishlist({required String productId}) {
-  //   if (_wishlistItems.containsKey(productId)) {
-  //     removeOneItem(productId);
-  //   } else {
-  //     _wishlistItems.putIfAbsent(
-  //         productId,
-  //         () => WishlistModel(
-  //             id: DateTime.now().toString(), productId: productId));
-  //   }
-  //   notifyListeners();
-  // }
+  /* void addRemoveProductToWishlist({required String productId}) {
+    if (_wishlistItems.containsKey(productId)) {
+       removeOneItem(productId);
+    } else {
+      _wishlistItems.putIfAbsent(
+          productId,
+          () => WishlistModel(
+              id: DateTime.now().toString(), productId: productId));
+    }
+   notifyListeners();
+ }*/
 
   final userCollection = FirebaseFirestore.instance.collection('users');
 

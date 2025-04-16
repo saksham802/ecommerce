@@ -18,7 +18,7 @@ class GlobalMethod{
         return AlertDialog(
           title: Row(children: [
             Image.asset(
-              'assets/images/warning-sign.png',
+              'assets/warningsign.png',
               height: 20,
               width: 20,
               fit: BoxFit.fill,

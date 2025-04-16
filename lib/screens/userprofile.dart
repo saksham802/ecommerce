@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ecommerce/auth/forgetpass.dart';
 import 'package:ecommerce/encrypt/EncryptionMethod.dart';
 
 import 'package:ecommerce/screens/Orders/OrderScreen.dart';
@@ -78,7 +79,7 @@ class _UserScreenState extends State<UserScreen> {
         setState(() {
           _name = decryptedName;
           _email = decryptedEmail;
-          address = decryptedaddress; // You can also decrypt this if it was encrypted
+          address = decryptedaddress;
         });
 
     } catch (error) {
@@ -89,7 +90,51 @@ class _UserScreenState extends State<UserScreen> {
       });
     }
   }
+  Future<void> _showChangeAddressDialog(BuildContext context) async {
+    _addressController.text = address ?? '';
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Change Address'),
+          content: TextField(
+            controller: _addressController,
+            decoration: const InputDecoration(hintText: 'Enter your new address'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (_addressController.text.isNotEmpty) {
+                  String newAddress = _addressController.text;
+                  try {
 
+                    String encryptedAddress = await EncryptionMethod.encryptData(newAddress);
+                    await FirebaseFirestore.instance.collection('users').doc(user!.uid).update({
+                      'shipping-address': encryptedAddress,
+                    });
+                    setState(() {
+                      address = newAddress;
+                    });
+
+                    Navigator.pop(context);
+                  } catch (e) {
+                    print('Error updating address: $e');
+                  }
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     final themeState = Provider.of<DarkThemeProvider>(context);
@@ -135,7 +180,9 @@ class _UserScreenState extends State<UserScreen> {
             _Listtile(
               title: "Address",
               icn: IconlyBold.home,
-              onPressed: () {},
+              onPressed: () {
+                _showChangeAddressDialog(context);
+              },
               subtitle: address,
               color: color,
             ),
@@ -163,13 +210,15 @@ class _UserScreenState extends State<UserScreen> {
               onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (_) => const Recentviewed())),
+                      builder: (_) => const ViewedRecentlyScreen())),
               color: color,
             ),
             _Listtile(
               title: "Forget Password",
               icn: IconlyBold.password,
-              onPressed: () {}, // Add reset logic if needed
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context)=>ForgetPasswordScreen()));
+              }, // Add reset logic if needed
               color: color,
             ),
             _Listtile(

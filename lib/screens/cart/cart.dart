@@ -15,7 +15,6 @@ import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-
 import '../../theme/darkthemeprovider.dart';
 
 class Cart extends StatefulWidget {
@@ -26,6 +25,8 @@ class Cart extends StatefulWidget {
 }
 
 class _CartState extends State<Cart> {
+  double total = 0.0;
+
   @override
   Widget build(BuildContext context) {
     final themeState = Provider.of<DarkThemeProvider>(context);
@@ -34,6 +35,15 @@ class _CartState extends State<Cart> {
     final productProvider = Provider.of<ProductProvider>(context);
     final cartItems = cartProvider.getCartItems;
     final cartItemList = cartItems.values.toList().reversed.toList();
+    final User? user = FirebaseAuth.instance.currentUser;
+
+
+    total = 0.0;
+    cartProvider.getCartItems.forEach((key, value) {
+      final product = productProvider.findProductByID(value.productId);
+      final price = product.isOnSale ? product.saleprice : product.price;
+      total += price * value.quantity;
+    });
 
     if (cartItemList.isEmpty) {
       return Emptyscreen(
@@ -75,7 +85,12 @@ class _CartState extends State<Cart> {
       ),
       body: Column(
         children: [
-          _checkout(ctx: context, cartProvider: cartProvider, productProvider: productProvider),
+          _checkout(
+            ctx: context,
+            cartProvider: cartProvider,
+            productProvider: productProvider,
+            user: user,
+          ),
           Expanded(
             child: ListView.builder(
               itemCount: cartItemList.length,
@@ -96,20 +111,14 @@ class _CartState extends State<Cart> {
     required BuildContext ctx,
     required CartProvider cartProvider,
     required ProductProvider productProvider,
+    required User? user,
   }) {
     final themeState = Provider.of<DarkThemeProvider>(ctx);
     final textColor = themeState.getDarkTheme ? Colors.white : Colors.black;
 
-    double total = 0.0;
-    cartProvider.getCartItems.forEach((key, value) {
-      final product = productProvider.findProductByID(value.productId);
-      final productPrice = product.isOnSale ? product.saleprice : product.price;
-      total += productPrice * value.quantity;
-    });
-
     return SizedBox(
       width: double.infinity,
-      height: MediaQuery.sizeOf(ctx).width * 0.1,
+      height: MediaQuery.sizeOf(ctx).width * 0.15,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(
@@ -120,59 +129,44 @@ class _CartState extends State<Cart> {
               child: InkWell(
                 borderRadius: BorderRadius.circular(10),
                 onTap: () async {
-                  final User? user = FirebaseAuth.instance.currentUser;
-                  final orderId = const Uuid().v4();
-
-                  if (user == null) return;
-
-                  try {
-                    for (var entry in cartProvider.getCartItems.entries) {
-                      final cartItem = entry.value;
-                      final product = productProvider.findProductByID(cartItem.productId);
-                      final productPrice = product.isOnSale ? product.saleprice : product.price;
-
-                      final order = OrderModel(
-                        orderId: orderId,
-                        userId: user.uid,
-                        productId: cartItem.productId,
-                        userName: user.displayName ?? 'Guest',
-                        price: (productPrice * cartItem.quantity).toString(),
-                        imageUrl: product.imgUrl,
-                        quantity: cartItem.quantity.toString(),
-                        orderDate: Timestamp.now(),
-                      );
-                      OrderModel en_Order = await EncryptionMethod.encryptCartItem(order);
-                      FireBaseMethod.addInFireBase(en_Order);
-
-                     /* await FirebaseFirestore.instance
-                          .collection('orders')
-                          .doc(order.orderId)
-                          .set({
-                        'orderId': orderId,
-                        'userId': user.uid,
-                       'productId': cartItem.productId,
-                        'userName': user.displayName ?? 'Guest',
-                        'price': (productPrice * cartItem.quantity).toString(),
-                        'imageUrl': product.imgUrl,
-                        'quantity': cartItem.quantity.toString(),
-                        'orderDate': Timestamp.now(),// optional but useful
-                      });*/
-                    }
-
-                    await cartProvider.clearOnlineCart();
-
+                  if (total <= 0) {
                     Fluttertoast.showToast(
-                      msg: "Your order has been placed",
+                      msg: "Cart total must be greater than zero.",
                       toastLength: Toast.LENGTH_SHORT,
                       gravity: ToastGravity.CENTER,
                     );
-                  } catch (e) {
-                    Fluttertoast.showToast(
-                      msg: "Order failed: $e",
-                      toastLength: Toast.LENGTH_LONG,
-                      gravity: ToastGravity.CENTER,
-                    );
+                    return;
                   }
+
+                  final orderId = const Uuid().v4();
+
+                  for (var entry in cartProvider.getCartItems.entries) {
+                    final cartItem = entry.value;
+                    final product = productProvider.findProductByID(cartItem.productId);
+                    final productPrice = product.isOnSale ? product.saleprice : product.price;
+
+                    final order = OrderModel(
+                      orderId: orderId,
+                      userId: user!.uid,
+                      productId: cartItem.productId,
+                      userName: user.displayName ?? 'Guest',
+                      price: (productPrice * cartItem.quantity).toString(),
+                      imageUrl: product.imgUrl,
+                      quantity: cartItem.quantity.toString(),
+                      orderDate: Timestamp.now(),
+                    );
+
+                    OrderModel encryptedOrder = await EncryptionMethod.encryptCartItem(order);
+                    await FireBaseMethod.addInFireBase(encryptedOrder);
+                  }
+
+                  Fluttertoast.showToast(
+                    msg: "Your order has been placed",
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.CENTER,
+                  );
+
+                  await cartProvider.clearOnlineCart();
                 },
                 child: const Padding(
                   padding: EdgeInsets.all(8.0),
@@ -198,5 +192,4 @@ class _CartState extends State<Cart> {
       ),
     );
   }
-
 }

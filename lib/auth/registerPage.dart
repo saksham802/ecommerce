@@ -272,7 +272,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () {
-                        // Optional password recovery
+
                       },
                       child: const Text(
                         'Forget password?',

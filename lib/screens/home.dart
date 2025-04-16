@@ -38,10 +38,10 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Swiper Section
+
             SizedBox(
-              height: 250, // Adjust height if needed
-              width: double.infinity, // Full width
+              height: 250,
+              width: double.infinity,
               child: Swiper(
                 autoplay: true,
                 itemBuilder: (BuildContext context, int index) {
@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            const SizedBox(height: 20), // Space between Swiper and List
+            const SizedBox(height: 20),
             Center(child: TextButton(onPressed: (){Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const OnSaleScreen()),
@@ -73,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Rotated "On Sale" Text
+
                   Column(
                     children: [
                       RotatedBox(
@@ -90,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
 
-                  const SizedBox(width: 10), // Space between text and list
+                  const SizedBox(width: 10),
 
                   Flexible(
                     child: SizedBox(

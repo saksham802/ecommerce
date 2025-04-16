@@ -22,7 +22,21 @@ class Emptyscreen extends StatelessWidget {
     final Color textColor = isDarkTheme ? Colors.white : Colors.black;
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        elevation: 0,
+        centerTitle: false,
+
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: textColor,
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.9),
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -69,8 +83,7 @@ class Emptyscreen extends StatelessWidget {
                 child: Textwidget(
                   text: buttonText,
                   textSize: 20,
-
-                  color: textColor,
+                  color: Colors.black,
                   isTitle: true,
                 ),
               ),

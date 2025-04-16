@@ -34,7 +34,7 @@ class EncryptionMethod {
       );
     } catch (e) {
       print('Failed to encrypt: $e');
-      throw Exception('Failed to encrypt order data: $e'); // Or rethrow; depending on your error handling needs
+      throw Exception('Failed to encrypt order data: $e');
     }
   }
 

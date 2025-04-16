@@ -92,7 +92,6 @@ class _LoginScreenState extends State<LoginScreen> {
           EncryptionMethod.keyEnc=key;
           EncryptionMethod.vi=iv;
 
-          // Store or use decryptedName as needed
         }
 
       }

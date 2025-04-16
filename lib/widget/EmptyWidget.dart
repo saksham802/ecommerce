@@ -1,4 +1,5 @@
 import 'package:ecommerce/innerscreen/FeedPage.dart';
+import 'package:ecommerce/screens/bottombar.dart';
 import 'package:ecommerce/widget/FeedWidget.dart';
 import 'package:ecommerce/widget/textwidget.dart';
 import 'package:flutter/material.dart';
@@ -63,7 +64,7 @@ class EmptyScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const FeedsScreen()),
+                    MaterialPageRoute(builder: (context) => const BottomNav()),
                   );
                 },
                 child: Textwidget(

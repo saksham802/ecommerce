@@ -34,7 +34,6 @@ class _FeedsScreenState extends State<FeedsScreen> {
     final Color textColor =
     themeState.getDarkTheme ? Colors.white : Colors.black;
 
-    // 🔍 Filtered product list
     List<ProductModel> allProducts = _searchTextController.text.isNotEmpty
         ? productProviders.searchQuery(_searchTextController.text)
         : ProductProvider.productsList;

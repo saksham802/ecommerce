@@ -16,6 +16,7 @@ class OnSaleWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final onsaleproductModel = Provider.of<ProductModel>(context);
+
     final themeState = Provider.of<DarkThemeProvider>(context);
     final Color textColor = themeState.getDarkTheme ? Colors.white : Colors.black;
     final Color boxColor = themeState.getDarkTheme
@@ -41,7 +42,7 @@ class OnSaleWidget extends StatelessWidget {
             padding: const EdgeInsets.all(12.0),
             child: Row(
               children: [
-                // Product Image and Details (Left Side)
+
                 Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -77,7 +78,7 @@ class OnSaleWidget extends StatelessWidget {
 
                 const SizedBox(width: 12),
 
-                // Right Side (Expanded)
+
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -95,7 +96,7 @@ class OnSaleWidget extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: const [
-                          Icon(IconlyLight.bag),
+
 
                         ],
                       ),

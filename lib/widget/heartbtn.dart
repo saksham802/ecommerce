@@ -58,8 +58,6 @@ class _HeartBTNState extends State<HeartBTN> {
             loading = false;
           });
         }
-        // print('user id is ${user.uid}');
-        // wishlistProvider.addRemoveProductToWishlist(productId: productId);
       },
       child: loading
           ? const Padding(
